@@ -109,7 +109,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
         
         # Bước B: Thêm quyền riêng cho người bị ban (Ghi đè nhẹ)
         # Cho phép user đọc và chat, các quyền khác giữ nguyên theo category
-        await created_channel.set_permissions(member, read_messages=True, send_messages=True)
+        await created_channel.set_permissions(member, read_messages=True, send_messages=False)
         
         await created_channel.send(f"Chào mừng {member.mention}! Ở đây {time_str} nhé.")
         
@@ -169,3 +169,4 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
