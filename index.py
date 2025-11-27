@@ -134,7 +134,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
         if created_channel:
              try:
                 await created_channel.delete()
-                await ctx.send(f"🎉 {member.name} đã hết án phạt ({time_str}) và được khôi phục chức vụ.")
+                await ctx.send(f"{member.name} hóa thành người sau ({time_str}).")
              except:
                 pass
 
@@ -154,7 +154,7 @@ async def vebo(ctx, member: discord.Member):
             await member.remove_roles(role_radao)
             # Gọi hàm trả role
             await restore_roles(guild, member)
-            await ctx.send(f"✅ Đã ân xá và khôi phục chức vụ cho {member.mention}!")
+            await ctx.send(f"Đã ân xá sớm cho {member.mention}!")
         except Exception as e:
             await ctx.send(f"❌ Lỗi xử lý role: {e}")
     else:
@@ -180,7 +180,8 @@ async def radao_error(ctx, error):
 @vebo.error
 async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
-        await ctx.send("Bạn không có quyền ân xá.")
+        await ctx.send("Con khỉ này thích ân xá đồng loại không?.")
 
 bot.run(os.getenv('TOKEN'))
+
 
