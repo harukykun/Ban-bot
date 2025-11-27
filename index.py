@@ -60,7 +60,7 @@ async def on_ready():
 async def radao(ctx, member: discord.Member, time_str: str):
     seconds = convert_time(time_str)
     if seconds == -1:
-        await ctx.send("⚠️ Sai định dạng thời gian (10s, 5m, 1h).")
+        await ctx.send("Sai định dạng thời gian (10s, 5m, 1h).")
         return
 
     guild = ctx.guild
@@ -83,20 +83,19 @@ async def radao(ctx, member: discord.Member, time_str: str):
         temp_saved_roles[member.id] = removed_roles_list
         try:
             await member.remove_roles(*roles_to_remove_objects)
-            await ctx.send(f"⬇️ Đã tháo tạm {len(roles_to_remove_objects)} role của {member.mention}.")
         except:
             pass
 
     # 2. Cấp Role Radao
     try:
         await member.add_roles(role_radao)
-        await ctx.send(f"🔨 {member.mention} ra đảo trong **{time_str}**.")
+        await ctx.send(f"Mày đi! {member.mention} ra đảo trong **{time_str}**.")
     except Exception as e:
-        await ctx.send(f"❌ Lỗi cấp role Radao: {e}")
+        await ctx.send(f"Lỗi cấp role Radao: {e}")
         return
 
     # 3. Tạo kênh (ĐỒNG BỘ VỚI CATEGORY) - Đã sửa
-    channel_name = f"dao-khi-{member.id}"
+    channel_name = f"dao-khi-cua-{member.nickname}"
     created_channel = None
 
     try:
@@ -112,9 +111,13 @@ async def radao(ctx, member: discord.Member, time_str: str):
         await created_channel.set_permissions(member, read_messages=True, send_messages=False)
         
         await created_channel.send(f"Chào mừng {member.mention}! Ở đây {time_str} nhé.")
+
+        await created_channel.send("Ở đây chịu khó bị rick lăn vài phát nhé:Đ!")
+        
+        await created_channel.send("https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713")
         
     except Exception as e:
-        await ctx.send(f"⚠️ Lỗi tạo kênh: {e}")
+        await ctx.send(f"Lỗi tạo kênh: {e}")
 
     # 4. Đếm ngược
     await asyncio.sleep(seconds)
@@ -149,9 +152,9 @@ async def vebo(ctx, member: discord.Member):
             await restore_roles(guild, member) # Trả role cũ
             await ctx.send(f"Đã ân xá cho {member.mention}!")
         except Exception as e:
-            await ctx.send(f"❌ Lỗi: {e}")
+            await ctx.send(f"Lỗi: {e}")
     else:
-        await ctx.send(f"⚠️ {member.name} không có ở đảo.")
+        await ctx.send(f"{member.name} Đã tẩu mất.")
 
     if category:
         for channel in category.text_channels:
@@ -169,5 +172,6 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
 
 
