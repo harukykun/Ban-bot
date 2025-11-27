@@ -14,9 +14,6 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Biến toàn cục để lưu các tác vụ đang đếm ngược (để có thể hủy nếu cần - nâng cao)
-# Ở mức cơ bản, chúng ta sẽ dùng check role để xử lý xung đột.
-
 def convert_time(time_str):
     unit = time_str[-1].lower()
     if unit not in ['s', 'm', 'h', 'd']:
@@ -61,49 +58,45 @@ async def radao(ctx, member: discord.Member, time_str: str):
         await ctx.send(f"❌ Lỗi cấp role: {e}")
         return
 
-    # Tạo kênh (Tên kênh phải unique để !vebo tìm được)
-    overwrites = {
-        guild.default_role: discord.PermissionOverwrite(read_messages=False),
-        member: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-        guild.me: discord.PermissionOverwrite(read_messages=True, manage_channels=True)
-    }
+    # 5. Tạo kênh text (Đồng bộ với Category)
+    channel_name = f"dao-khi-{member.id}"
+    created_channel = None
 
-    # Đặt tên kênh có chứa ID user để dễ tìm
-    channel_name = f"dao-khi-{member.id}" 
-    
     try:
+        # Bước 1: Tạo kênh thuần (Sẽ kế thừa quyền của Category)
         created_channel = await guild.create_text_channel(
             name=channel_name,
-            category=category,
-            overwrites=overwrites,
-            topic=f"Kênh phạt của {member.id}" # Lưu ID vào topic để chắc chắn
+            category=category, 
+            topic=f"Kênh phạt của {member.id}"
         )
+        
+        # Bước 2: Cấp quyền riêng cho người bị ban (Ghi đè lên quyền sync)
+        await created_channel.set_permissions(member, read_messages=True, send_messages=True)
+        
         await created_channel.send(f"Chào mừng {member.mention} đến với đảo khỉ! Mày sẽ ở đây {time_str}.")
+        
     except Exception as e:
         await ctx.send(f"⚠️ Lỗi tạo kênh: {e}")
-        created_channel = None
 
     # Đếm ngược
     await asyncio.sleep(seconds)
 
     # --- HẾT GIỜ ---
-    # Kiểm tra lại xem member còn role không (đề phòng đã được !vebo trước đó)
-    member = guild.get_member(member.id) # Fetch lại member
+    member = guild.get_member(member.id) 
     if member and role in member.roles:
         try:
             await member.remove_roles(role)
         except:
             pass
         
-        # Gửi thông báo về kênh gốc nếu kênh phạt bị xóa
-        if created_channel: # Nếu kênh phạt vẫn còn
+        if created_channel:
              try:
                 await created_channel.delete()
-                await ctx.send(f"{member.name} đã về bờ sớm và tiếp xúc với nền văn minh nhân loại sau ({time_str}).")
+                await ctx.send(f"🎉 {member.name} đã về bờ ({time_str}).")
              except:
-                pass # Kênh đã bị xóa bởi !vebo
+                pass
 
-# --- LỆNH VỀ BỜ (MỚI) ---
+# --- LỆNH VỀ BỜ ---
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def vebo(ctx, member: discord.Member):
@@ -111,38 +104,26 @@ async def vebo(ctx, member: discord.Member):
     role = guild.get_role(TARGET_ROLE_ID)
     category = guild.get_channel(TARGET_CATEGORY_ID)
 
-    if not role:
-        await ctx.send("❌ Không tìm thấy Role.")
-        return
+    if not role: return
 
-    # 1. Gỡ Role ngay lập tức
     if role in member.roles:
         try:
             await member.remove_roles(role)
-            await ctx.send(f"Đã ân xá cho {member.mention} về bờ sớm!")
+            await ctx.send(f"✅ Đã ân xá cho {member.mention}!")
         except Exception as e:
-            await ctx.send(f"❌ Lỗi khi gỡ role: {e}")
+            await ctx.send(f"❌ Lỗi: {e}")
     else:
-        await ctx.send(f"{member.name} hiện không ở đảo (không có role radao).")
+        await ctx.send(f"⚠️ {member.name} không có ở đảo.")
 
-    # 2. Tìm và xóa kênh phạt của người đó
-    # Duyệt qua tất cả kênh trong category Đảo
     if category:
-        found_channel = False
         for channel in category.text_channels:
-            # Kiểm tra: Tên kênh chứa ID HOẶC Topic chứa ID người dùng
             if str(member.id) in channel.name or (channel.topic and str(member.id) in channel.topic):
                 try:
                     await channel.delete()
-                    found_channel = True
                 except:
-                    await ctx.send("⚠️ Tìm thấy kênh nhưng không xóa được.")
-        
-        if not found_channel:
-            # Không báo lỗi vì có thể admin đã xóa tay rồi
-            pass
+                    pass
 
-# Xử lý lỗi
+# Error Handlers
 @radao.error
 async def radao_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
@@ -154,7 +135,5 @@ async def radao_error(ctx, error):
 async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send("Bạn không có quyền ân xá.")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Dùng lệnh sai: `!vebo <@tag>`")
 
 bot.run(os.getenv('TOKEN'))
