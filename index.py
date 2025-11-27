@@ -72,8 +72,11 @@ async def radao(ctx, member: discord.Member, time_str: str):
         return
 
     # 3. Kiểm tra Role: Nếu role cao nhất của thằng bị ban >= role cao nhất của thằng gõ lệnh
-    if member.top_role >= ctx.author.top_role:
+    if member.top_role > ctx.author.top_role:
         await ctx.send(f"Đòi ban bố của bạn hả? Mơ đi.")
+        return
+    if member.top_role = ctx.author.top_role:
+        await ctx.send(f"Đồng loại với nhau cả mà!.")
         return
     # ----------------------------------------------------
 
@@ -191,3 +194,4 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
