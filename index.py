@@ -81,7 +81,6 @@ async def radao(ctx, member: discord.Member, time_str: str):
         temp_saved_roles[member.id] = removed_roles_list
         try:
             await member.remove_roles(*roles_to_remove_objects)
-            await ctx.send(f"⬇️ Đã tháo tạm {len(roles_to_remove_objects)} role của {member.mention}.")
         except: pass
 
     # 2. Cấp Role Radao
@@ -176,6 +175,7 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
 
 
 
