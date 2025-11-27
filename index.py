@@ -169,14 +169,15 @@ async def vebo(ctx, member: discord.Member):
 
 @radao.error
 async def radao_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
+    if isinstance(error, commands.MissingPermissions): await ctx.send("Khỉ con mà đòi làm bố thiên hạ hả.")
     elif isinstance(error, commands.MissingRequiredArgument): await ctx.send("Sai lệnh: `!radao <@tag> <time>`")
 
 @vebo.error
 async def vebo_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
+    if isinstance(error, commands.MissingPermissions): await ctx.send("Khỉ con mà đòi làm bố thiên hạ hả.")
 
 bot.run(os.getenv('TOKEN'))
+
 
 
 
