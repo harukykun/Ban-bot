@@ -135,7 +135,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
         if created_channel:
              try:
                 await created_channel.delete()
-                await ctx.send(f"{member.name} đã về bờ ({time_str}).")
+                await ctx.send(f"{member.name} tiến hóa thành người sau ({time_str}).")
              except: pass
 
 # --- LỆNH VỀ BỜ ---
@@ -172,4 +172,5 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
 
