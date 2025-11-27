@@ -116,9 +116,10 @@ async def radao(ctx, member: discord.Member, time_str: str):
 @radao.error
 async def radao_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
-        await ctx.send("🚫 Bạn không phải Admin.")
+        await ctx.send("Đáy xã hội mà cũng đòi ban người ta.")
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Dùng lệnh sai: `!radao <@tag> <thời_gian>`")
 
 
 bot.run(os.getenv('TOKEN'))
+
