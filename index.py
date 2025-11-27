@@ -75,7 +75,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
     if member.top_role > ctx.author.top_role:
         await ctx.send(f"Đòi ban bố của bạn hả? Mơ đi.")
         return
-    if member.top_role = ctx.author.top_role:
+    if member.top_role == ctx.author.top_role:
         await ctx.send(f"Đồng loại với nhau cả mà!.")
         return
     # ----------------------------------------------------
@@ -194,4 +194,5 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
 
