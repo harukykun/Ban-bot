@@ -9,7 +9,11 @@ TARGET_CATEGORY_ID = 1442769574285283399  # ID Category "đảo"
 GIF_STICKER_ID = 1443617401538347108      # ID Sticker/GIF bạn muốn gửi
 
 # Danh sách ID các role sẽ bị GỠ TẠM THỜI
-ROLES_TO_REMOVE = []
+ROLES_TO_REMOVE = [
+    1434043875445702656,
+    1408433140363432006,
+    1397191419361230970
+]
 # -----------------------------------------
 
 intents = discord.Intents.default()
@@ -172,5 +176,6 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
 
 
