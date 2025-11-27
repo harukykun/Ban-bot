@@ -61,7 +61,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
     # 4. Cấp Role
     try:
         await member.add_roles(role)
-        await ctx.send(f"✅ Đã đưa {member.mention} ra đảo trong **{time_str}**.")
+        await ctx.send(f"{member.mention} đã cook ra đảo trong **{time_str}**.")
     except discord.Forbidden:
         await ctx.send("❌ Bot không đủ quyền! Hãy kéo Role của Bot lên CAO HƠN role cần cấp.")
         return
@@ -76,7 +76,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
         guild.me: discord.PermissionOverwrite(read_messages=True, manage_channels=True)
     }
 
-    channel_name = f"dao-{member.name}" # Tên kênh không dấu, không cách
+    channel_name = f"monkey-island" # Tên kênh không dấu, không cách
     created_channel = None
 
     try:
@@ -86,7 +86,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
             overwrites=overwrites,
             topic=f"Kênh phạt {member.name}. Thời gian: {time_str}"
         )
-        await created_channel.send(f"{member.mention} Chào mừng ra đảo! Bạn sẽ ở đây {time_str}.")
+        await created_channel.send(f"Chào mừng{member.mention} đến với đảo khỉ nha! Mày sẽ ở đây {time_str}.")
     except Exception as e:
         await ctx.send(f"⚠️ Đã cấp role nhưng lỗi tạo kênh: {e}")
 
@@ -108,7 +108,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
     if created_channel:
         try:
             await created_channel.delete()
-            await ctx.send(f"🎉 {member.name} đã hết thời gian phạt ({time_str}).")
+            await ctx.send(f"{member.name} đã về bờ và tiếp xúc với nền văn minh nhân loại sau ({time_str}).")
         except:
             pass 
 
@@ -119,5 +119,6 @@ async def radao_error(ctx, error):
         await ctx.send("🚫 Bạn không phải Admin.")
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Dùng lệnh sai: `!radao <@tag> <thời_gian>`")
+
 
 bot.run(os.getenv('TOKEN'))
