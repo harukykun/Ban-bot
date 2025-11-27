@@ -106,7 +106,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
         
         # Bước B: Cấp quyền (Cho phép chat: send_messages=True)
         # Nếu bạn để False, người bị ban chỉ nhìn thấy chứ không chat được để xin lỗi.
-        await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
+        await created_channel.set_permissions(member, read_messages=True, send_messages=False, read_message_history=True)
         
         await created_channel.send(f"Chào mừng {member.mention}! Ở đây {time_str} nhé.")
 
@@ -175,6 +175,7 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
 
 
 
