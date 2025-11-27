@@ -12,7 +12,8 @@ GIF_STICKER_ID = 1443617401538347108      # ID Sticker/GIF bạn muốn gửi
 ROLES_TO_REMOVE = [
     1434043875445702656,
     1408433140363432006,
-    1397191419361230970
+    1397191419361230970,
+    1408419247163576330
 ]
 # -----------------------------------------
 
@@ -175,6 +176,7 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
+
 
 
 
