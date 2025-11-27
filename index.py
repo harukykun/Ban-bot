@@ -89,7 +89,6 @@ async def radao(ctx, member: discord.Member, time_str: str):
         temp_saved_roles[member.id] = removed_roles_list
         try:
             await member.remove_roles(*roles_to_remove_objects)
-            await ctx.send(f"⬇️ Đã tháo {len(roles_to_remove_objects)} role quyền lực của {member.mention}.")
         except Exception as e:
             await ctx.send(f"⚠️ Lỗi khi tháo role: {e}")
 
@@ -184,3 +183,4 @@ async def vebo_error(ctx, error):
         await ctx.send("Bạn không có quyền ân xá.")
 
 bot.run(os.getenv('TOKEN'))
+
