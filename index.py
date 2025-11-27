@@ -6,7 +6,7 @@ import os
 # --- CẤU HÌNH ID (Thay số của bạn vào) ---
 TARGET_ROLE_ID = 1442769995783475292      # ID Role "radao"
 TARGET_CATEGORY_ID = 1442769574285283399  # ID Category "đảo"
-GIF_STICKER_ID = 1443617401538347108      # ID Sticker/GIF bạn muốn gửi
+GIF_STICKER_ID = 1443617401538347108      # ID Sticker/GIF (để dự phòng)
 
 # Danh sách ID các role sẽ bị GỠ TẠM THỜI
 ROLES_TO_REMOVE = [
@@ -56,8 +56,27 @@ async def on_ready():
 
 # --- LỆNH RA ĐẢO ---
 @bot.command()
-@commands.has_permissions(administrator=True)
+@commands.has_permissions(administrator=True) # Vẫn giữ quyền Admin, nhưng check thêm bên dưới
 async def radao(ctx, member: discord.Member, time_str: str):
+    
+    # --- [MỚI] KIỂM TRA QUYỀN HẠN (HIERARCHY CHECK) ---
+    
+    # 1. Không được ban chính mình
+    if member.id == ctx.author.id:
+        await ctx.send("Sao lại tự bắn vào dé chính mình thế? Khùng hả?")
+        return
+
+    # 2. Không được ban Chủ Server (Owner)
+    if member.id == ctx.guild.owner_id:
+        await ctx.send("Mày định ban chủ server à? Lá gan to đấy!")
+        return
+
+    # 3. Kiểm tra Role: Nếu role cao nhất của thằng bị ban >= role cao nhất của thằng gõ lệnh
+    if member.top_role >= ctx.author.top_role:
+        await ctx.send(f"Đòi ban bố của bạn hả? Mơ đi.")
+        return
+    # ----------------------------------------------------
+
     seconds = convert_time(time_str)
     if seconds == -1:
         await ctx.send("⚠️ Sai định dạng thời gian (10s, 5m, 1h).")
@@ -93,8 +112,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
         await ctx.send(f"❌ Lỗi cấp role Radao: {e}")
         return
 
-    # 3. Tạo kênh (ĐỒNG BỘ VỚI CATEGORY)
-    # Lưu ý: Dùng display_name an toàn hơn nickname (tránh lỗi None)
+    # 3. Tạo kênh
     channel_name = f"dao-khi-cua-{member.display_name}"
     created_channel = None
 
@@ -106,22 +124,18 @@ async def radao(ctx, member: discord.Member, time_str: str):
             topic=f"Kênh phạt của {member.id}"
         )
         
-        # Bước B: Cấp quyền (Cho phép chat: send_messages=True)
-        # Nếu bạn để False, người bị ban chỉ nhìn thấy chứ không chat được để xin lỗi.
+        # Bước B: Cấp quyền (Cho phép chat: send_messages=False như bạn yêu cầu ở code cũ)
         await created_channel.set_permissions(member, read_messages=True, send_messages=False, read_message_history=True)
         
         await created_channel.send(f"Chào mừng {member.mention}! Ở đây {time_str} nhé.")
 
-        # --- PHẦN MỚI: GỬI STICKER/GIF THEO ID ---
+        # --- GỬI STICKER/LINK ---
         try:
-            # Bot tìm sticker theo ID
             await created_channel.send("Ngồi đây bị Rick Lăn nhé :Đ!")
             await created_channel.send("https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713")
         except Exception as e:
-            print(f"Không gửi được Sticker: {e}")
+            print(f"Lỗi gửi link: {e}")
             await created_channel.send(f"Lần này méo có rick roll mày may đấy")
-            # Nếu ID đó không phải Sticker (ví dụ ID của Emoji hoặc sai ID)
-        # ------------------------------------------
         
     except Exception as e:
         await ctx.send(f"⚠️ Lỗi tạo kênh: {e}")
@@ -169,19 +183,11 @@ async def vebo(ctx, member: discord.Member):
 
 @radao.error
 async def radao_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions): await ctx.send("Khỉ con mà đòi làm bố thiên hạ hả.")
+    if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
     elif isinstance(error, commands.MissingRequiredArgument): await ctx.send("Sai lệnh: `!radao <@tag> <time>`")
 
 @vebo.error
 async def vebo_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions): await ctx.send("Khỉ con mà đòi làm bố thiên hạ hả.")
+    if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
-
-
-
-
-
-
-
-
