@@ -3,15 +3,16 @@ from discord.ext import commands
 import asyncio
 import os
 
-# --- CẤU HÌNH ID ---
-TARGET_ROLE_ID = 1442769995783475292      # ID Role "radao" (Role bị phạt)
+# --- CẤU HÌNH ID (Thay số của bạn vào) ---
+TARGET_ROLE_ID = 1442769995783475292      # ID Role "radao"
 TARGET_CATEGORY_ID = 1442769574285283399  # ID Category "đảo"
 
-# Danh sách ID các role sẽ bị GỠ khi ra đảo và CẤP LẠI khi về bờ
-# Ví dụ: Role VIP, Role Thành viên, v.v.
+# Danh sách ID các role sẽ bị GỠ TẠM THỜI (và trả lại sau này)
 ROLES_TO_REMOVE = [
-    1397191419361230970  
+    # 123456789012345678,  <-- Ví dụ ID Role VIP
+    # 987654321098765432,  <-- Ví dụ ID Role Mod
 ]
+# -----------------------------------------
 
 intents = discord.Intents.default()
 intents.members = True
@@ -19,7 +20,7 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Biến bộ nhớ tạm để lưu role cũ của user: {user_id: [role_id_1, role_id_2]}
+# Bộ nhớ tạm để lưu role cũ: {user_id: [role_id_1, role_id_2]}
 temp_saved_roles = {}
 
 def convert_time(time_str):
@@ -33,25 +34,20 @@ def convert_time(time_str):
     elif unit == 'd': return val * 86400
     return -1
 
-# Hàm hỗ trợ: Cấp lại role cũ cho user
+# Hàm trả lại role cũ
 async def restore_roles(guild, member):
     if member.id in temp_saved_roles:
         role_ids = temp_saved_roles[member.id]
         roles_to_add = []
-        
         for r_id in role_ids:
             role = guild.get_role(r_id)
-            if role:
-                roles_to_add.append(role)
+            if role: roles_to_add.append(role)
         
         if roles_to_add:
             try:
                 await member.add_roles(*roles_to_add)
-                print(f"Đã trả lại {len(roles_to_add)} role cho {member.name}")
             except Exception as e:
                 print(f"Lỗi trả role: {e}")
-        
-        # Xóa khỏi bộ nhớ sau khi trả xong
         del temp_saved_roles[member.id]
 
 @bot.event
@@ -64,7 +60,7 @@ async def on_ready():
 async def radao(ctx, member: discord.Member, time_str: str):
     seconds = convert_time(time_str)
     if seconds == -1:
-        await ctx.send("⚠️ Định dạng thời gian sai! Ví dụ: 10s, 5m, 1h")
+        await ctx.send("⚠️ Sai định dạng thời gian (10s, 5m, 1h).")
         return
 
     guild = ctx.guild
@@ -72,73 +68,74 @@ async def radao(ctx, member: discord.Member, time_str: str):
     category = guild.get_channel(TARGET_CATEGORY_ID)
 
     if not role_radao or not category:
-        await ctx.send("❌ Lỗi cấu hình ID Role hoặc Category.")
+        await ctx.send("❌ Lỗi cấu hình ID.")
         return
 
-    # --- BƯỚC MỚI: Xử lý gỡ Role chỉ định ---
+    # 1. Gỡ các role trong danh sách chỉ định
     removed_roles_list = []
     roles_to_remove_objects = []
-
     for user_role in member.roles:
         if user_role.id in ROLES_TO_REMOVE:
             removed_roles_list.append(user_role.id)
             roles_to_remove_objects.append(user_role)
     
-    # Lưu vào bộ nhớ nếu có role cần gỡ
     if removed_roles_list:
         temp_saved_roles[member.id] = removed_roles_list
         try:
             await member.remove_roles(*roles_to_remove_objects)
-        except Exception as e:
-            await ctx.send(f"⚠️ Lỗi khi tháo role: {e}")
+            await ctx.send(f"⬇️ Đã tháo tạm {len(roles_to_remove_objects)} role của {member.mention}.")
+        except:
+            pass
 
-    # --- Tiếp tục quy trình cũ ---
+    # 2. Cấp Role Radao
     try:
         await member.add_roles(role_radao)
-        await ctx.send(f"🔨 {member.mention} đã cook ra đảo trong **{time_str}**.")
+        await ctx.send(f"🔨 {member.mention} ra đảo trong **{time_str}**.")
     except Exception as e:
         await ctx.send(f"❌ Lỗi cấp role Radao: {e}")
         return
 
-    # Tạo kênh (Đồng bộ Category + Cấp quyền riêng)
+    # 3. Tạo kênh (ĐỒNG BỘ VỚI CATEGORY) - Đã sửa
     channel_name = f"dao-khi-{member.id}"
     created_channel = None
 
     try:
+        # Bước A: Tạo kênh thuần (Không set overwrites -> Tự động Sync với Category)
         created_channel = await guild.create_text_channel(
             name=channel_name,
             category=category, 
             topic=f"Kênh phạt của {member.id}"
         )
+        
+        # Bước B: Thêm quyền riêng cho người bị ban (Ghi đè nhẹ)
+        # Cho phép user đọc và chat, các quyền khác giữ nguyên theo category
         await created_channel.set_permissions(member, read_messages=True, send_messages=True)
-        await created_channel.send(f"Chào mừng {member.mention} đến với đảo khỉ! Mày sẽ ở đây {time_str}.")
+        
+        await created_channel.send(f"Chào mừng {member.mention}! Ở đây {time_str} nhé.")
+        
     except Exception as e:
         await ctx.send(f"⚠️ Lỗi tạo kênh: {e}")
 
-    # Đếm ngược
+    # 4. Đếm ngược
     await asyncio.sleep(seconds)
 
-    # --- HẾT GIỜ (Tự động về bờ) ---
-    # Cần fetch lại member để cập nhật trạng thái mới nhất
+    # 5. Hết giờ
     member = guild.get_member(member.id) 
-    
-    # Kiểm tra: Nếu user vẫn còn role Radao (tức là chưa được !vebo trước đó)
     if member and role_radao in member.roles:
         try:
             await member.remove_roles(role_radao)
-            # Cấp lại role cũ
-            await restore_roles(guild, member)
+            await restore_roles(guild, member) # Trả role cũ
         except:
             pass
         
         if created_channel:
              try:
                 await created_channel.delete()
-                await ctx.send(f"{member.name} hóa thành người sau ({time_str}).")
+                await ctx.send(f"🎉 {member.name} đã về bờ ({time_str}).")
              except:
                 pass
 
-# --- LỆNH VỀ BỜ (Ân xá sớm) ---
+# --- LỆNH VỀ BỜ ---
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def vebo(ctx, member: discord.Member):
@@ -146,43 +143,29 @@ async def vebo(ctx, member: discord.Member):
     role_radao = guild.get_role(TARGET_ROLE_ID)
     category = guild.get_channel(TARGET_CATEGORY_ID)
 
-    if not role_radao: return
-
-    # 1. Gỡ role Radao và Cấp lại role cũ
     if role_radao in member.roles:
         try:
             await member.remove_roles(role_radao)
-            # Gọi hàm trả role
-            await restore_roles(guild, member)
-            await ctx.send(f"Đã ân xá sớm cho {member.mention}!")
+            await restore_roles(guild, member) # Trả role cũ
+            await ctx.send(f"✅ Đã ân xá cho {member.mention}!")
         except Exception as e:
-            await ctx.send(f"❌ Lỗi xử lý role: {e}")
+            await ctx.send(f"❌ Lỗi: {e}")
     else:
         await ctx.send(f"⚠️ {member.name} không có ở đảo.")
 
-    # 2. Xóa kênh
     if category:
         for channel in category.text_channels:
             if str(member.id) in channel.name or (channel.topic and str(member.id) in channel.topic):
-                try:
-                    await channel.delete()
-                except:
-                    pass
+                try: await channel.delete()
+                except: pass
 
-# Error Handlers
 @radao.error
 async def radao_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("Đáy xã hội mà cũng đòi ban người ta.")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Dùng lệnh sai: `!radao <@tag> <thời_gian>`")
+    if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
+    elif isinstance(error, commands.MissingRequiredArgument): await ctx.send("Sai lệnh: `!radao <@tag> <time>`")
 
 @vebo.error
 async def vebo_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("Con khỉ này thích ân xá đồng loại không?.")
+    if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
-
-
-
