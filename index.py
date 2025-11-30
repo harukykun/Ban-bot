@@ -56,7 +56,7 @@ async def on_ready():
 
 # --- LỆNH RA ĐẢO ---
 @bot.command()
-@commands.has_permissions(administrator=True) # Vẫn giữ quyền Admin, nhưng check thêm bên dưới
+@commands.has_permissions(administrator=True) 
 async def radao(ctx, member: discord.Member, time_str: str):
     
     # --- [MỚI] KIỂM TRA QUYỀN HẠN (HIERARCHY CHECK) ---
@@ -76,13 +76,13 @@ async def radao(ctx, member: discord.Member, time_str: str):
         await ctx.send(f"Đòi ban bố của bạn hả? Mơ đi.")
         return
     if member.top_role == ctx.author.top_role:
-        await ctx.send(f"Đồng loại với nhau cả mà!.")
+        await ctx.send(f"Đồng loại với nhau cả mà!")
         return
     # ----------------------------------------------------
 
     seconds = convert_time(time_str)
     if seconds == -1:
-        await ctx.send("⚠️ Sai định dạng thời gian (10s, 5m, 1h).")
+        await ctx.send("Sai định dạng thời gian (10s, 5m, 1h).")
         return
 
     guild = ctx.guild
@@ -93,11 +93,21 @@ async def radao(ctx, member: discord.Member, time_str: str):
         await ctx.send("❌ Lỗi cấu hình ID.")
         return
 
-    # 1. Gỡ các role trong danh sách chỉ định
+    # --- [SỬA ĐỔI TẠI ĐÂY] ---
+    # 4. Kiểm tra xem người này đã bị ban chưa (đã có role radao chưa)
+    if role_radao in member.roles:
+        await ctx.send(f"{member.mention} đang ở đảo rồi, đừng spam lệnh nữa!")
+        return
+    # -------------------------
+
+    # 5. Gỡ các role trong danh sách chỉ định
+# 5. Gỡ TẤT CẢ role (trừ role @everyone và role managed)
     removed_roles_list = []
     roles_to_remove_objects = []
+    
     for user_role in member.roles:
-        if user_role.id in ROLES_TO_REMOVE:
+        # Điều kiện: Không phải role @everyone (default_role) VÀ Không phải role hệ thống (managed)
+        if user_role != ctx.guild.default_role and not user_role.managed:
             removed_roles_list.append(user_role.id)
             roles_to_remove_objects.append(user_role)
     
@@ -105,17 +115,18 @@ async def radao(ctx, member: discord.Member, time_str: str):
         temp_saved_roles[member.id] = removed_roles_list
         try:
             await member.remove_roles(*roles_to_remove_objects)
-        except: pass
+        except Exception as e:
+            print(f"Không thể gỡ hết role: {e}")
 
-    # 2. Cấp Role Radao
+    # 6. Cấp Role Radao
     try:
         await member.add_roles(role_radao)
-        await ctx.send(f"🔨 {member.mention} ra đảo trong **{time_str}**.")
+        await ctx.send(f"Bonk 🔨 bà zà mày ra đảo trong **{time_str}** nhé.")
     except Exception as e:
         await ctx.send(f"❌ Lỗi cấp role Radao: {e}")
         return
 
-    # 3. Tạo kênh
+    # 7. Tạo kênh
     channel_name = f"dao-khi-cua-{member.display_name}"
     created_channel = None
 
@@ -127,7 +138,7 @@ async def radao(ctx, member: discord.Member, time_str: str):
             topic=f"Kênh phạt của {member.id}"
         )
         
-        # Bước B: Cấp quyền (Cho phép chat: send_messages=False như bạn yêu cầu ở code cũ)
+        # Bước B: Cấp quyền 
         await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
         
         await created_channel.send(f"Chào mừng {member.mention}! Ở đây {time_str} nhé.")
@@ -143,10 +154,10 @@ async def radao(ctx, member: discord.Member, time_str: str):
     except Exception as e:
         await ctx.send(f"⚠️ Lỗi tạo kênh: {e}")
 
-    # 4. Đếm ngược
+    # 8. Đếm ngược
     await asyncio.sleep(seconds)
 
-    # 5. Hết giờ
+    # 9. Hết giờ
     member = guild.get_member(member.id) 
     if member and role_radao in member.roles:
         try:
@@ -176,7 +187,7 @@ async def vebo(ctx, member: discord.Member):
         except Exception as e:
             await ctx.send(f"❌ Lỗi: {e}")
     else:
-        await ctx.send(f"⚠️ {member.name} không có ở đảo.")
+        await ctx.send(f"{member.name} không có ở đảo.")
 
     if category:
         for channel in category.text_channels:
@@ -194,6 +205,3 @@ async def vebo_error(ctx, error):
     if isinstance(error, commands.MissingPermissions): await ctx.send("Không có quyền Admin.")
 
 bot.run(os.getenv('TOKEN'))
-
-
-
