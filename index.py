@@ -8,7 +8,7 @@ TARGET_ROLE_ID = 1442769995783475292      # ID Role "radao"
 TARGET_CATEGORY_ID = 1442769574285283399  # ID Category "đảo"
 GIF_STICKER_ID = 1443617401538347108      # ID Sticker/GIF (để dự phòng)
 
-# Danh sách ID các role sẽ bị GỠ TẠM THỜI
+# Danh sách ID các role CẦN GỠ (Chỉ những role này mới bị gỡ)
 ROLES_TO_REMOVE = [
     1434043875445702656,
     1408433140363432006,
@@ -59,26 +59,22 @@ async def on_ready():
 @commands.has_permissions(administrator=True) 
 async def radao(ctx, member: discord.Member, time_str: str):
     
-    # --- [MỚI] KIỂM TRA QUYỀN HẠN (HIERARCHY CHECK) ---
-    
-    # 1. Không được ban chính mình
+    # --- KIỂM TRA QUYỀN HẠN ---
     if member.id == ctx.author.id:
         await ctx.send("Sao lại tự bắn vào dé chính mình thế? Khùng hả?")
         return
 
-    # 2. Không được ban Chủ Server (Owner)
     if member.id == ctx.guild.owner_id:
         await ctx.send("Mày định ban chủ server à? Lá gan to đấy!")
         return
 
-    # 3. Kiểm tra Role: Nếu role cao nhất của thằng bị ban >= role cao nhất của thằng gõ lệnh
     if member.top_role > ctx.author.top_role:
         await ctx.send(f"Đòi ban bố của bạn hả? Mơ đi.")
         return
     if member.top_role == ctx.author.top_role:
         await ctx.send(f"Đồng loại với nhau cả mà!")
         return
-    # ----------------------------------------------------
+    # ---------------------------
 
     seconds = convert_time(time_str)
     if seconds == -1:
@@ -93,30 +89,29 @@ async def radao(ctx, member: discord.Member, time_str: str):
         await ctx.send("❌ Lỗi cấu hình ID.")
         return
 
-    # --- [SỬA ĐỔI TẠI ĐÂY] ---
-    # 4. Kiểm tra xem người này đã bị ban chưa (đã có role radao chưa)
     if role_radao in member.roles:
         await ctx.send(f"{member.mention} đang ở đảo rồi, đừng spam lệnh nữa!")
         return
-    # -------------------------
 
-    # 5. Gỡ các role trong danh sách chỉ định
-# 5. Gỡ TẤT CẢ role (trừ role @everyone và role managed)
+    # --- [PHẦN ĐÃ SỬA] ---
+    # 5. Gỡ các role TRONG DANH SÁCH CHỈ ĐỊNH (ROLES_TO_REMOVE)
     removed_roles_list = []
     roles_to_remove_objects = []
     
     for user_role in member.roles:
-        # Điều kiện: Không phải role @everyone (default_role) VÀ Không phải role hệ thống (managed)
-        if user_role != ctx.guild.default_role and not user_role.managed:
+        # Kiểm tra: Nếu ID của role nằm trong danh sách ROLES_TO_REMOVE
+        if user_role.id in ROLES_TO_REMOVE:
             removed_roles_list.append(user_role.id)
             roles_to_remove_objects.append(user_role)
     
+    # Lưu lại để trả sau và thực hiện gỡ
     if removed_roles_list:
         temp_saved_roles[member.id] = removed_roles_list
         try:
             await member.remove_roles(*roles_to_remove_objects)
         except Exception as e:
-            print(f"Không thể gỡ hết role: {e}")
+            print(f"Không thể gỡ role chỉ định: {e}")
+    # ---------------------
 
     # 6. Cấp Role Radao
     try:
@@ -131,19 +126,16 @@ async def radao(ctx, member: discord.Member, time_str: str):
     created_channel = None
 
     try:
-        # Bước A: Tạo kênh thuần
         created_channel = await guild.create_text_channel(
             name=channel_name,
             category=category, 
             topic=f"Kênh phạt của {member.id}"
         )
         
-        # Bước B: Cấp quyền 
         await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
         
         await created_channel.send(f"Chào mừng {member.mention}! Ở đây {time_str} nhé.")
 
-        # --- GỬI STICKER/LINK ---
         try:
             await created_channel.send("Ngồi đây bị Rick Lăn nhé :Đ!")
             await created_channel.send("https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713")
