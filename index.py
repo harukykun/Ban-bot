@@ -146,7 +146,6 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
 
         try:
             await created_channel.send(f"Mày ra đảo vì **{reason}**")
-            await created_channel.send(f"Thời gian đếm ngược: **{discord_timestamp}**")
             await created_channel.send("Ngồi đây bị Rick Lăn nhé :Đ!")
             await created_channel.send("https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713")
         except Exception as e:
@@ -196,4 +195,5 @@ async def vebo_slash(interaction: discord.Interaction, member: discord.Member):
                 try: await channel.delete()
                 except: pass
 bot.run(os.getenv('TOKEN'))
+
 
