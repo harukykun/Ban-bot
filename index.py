@@ -4,6 +4,9 @@ import asyncio
 import os
 from discord import app_commands 
 from typing import Optional
+import re 
+import time
+
 TARGET_ROLE_ID = 1442769995783475292  
 TARGET_CATEGORY_ID = 1442769574285283399 
 GIF_STICKER_ID = 1443617401538347108     
@@ -24,16 +27,21 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 temp_saved_roles = {}
 
-def convert_time(time):
-    unit = time[-1].lower()
-    if unit not in ['s', 'm', 'h', 'd']: return -1
-    try: val = int(time[:-1])
-    except ValueError: return -1
-    if unit == 's': return val
-    elif unit == 'm': return val * 60
-    elif unit == 'h': return val * 3600
-    elif unit == 'd': return val * 86400
-    return -1
+def convert_time(time_str):
+    time_str = time_str.lower().replace(" ", "")
+    total_seconds = 0
+    matches = re.findall(r"(\d+)([dhms])", time_str)
+    if not matches: return -1
+    found_valid = False
+    for val, unit in matches:
+        val = int(val)
+        found_valid = True
+        if unit == 's': total_seconds += val
+        elif unit == 'm': total_seconds += val * 60
+        elif unit == 'h': total_seconds += val * 3600
+        elif unit == 'd': total_seconds += val * 86400
+        
+    return total_seconds if found_valid and total_seconds > 0 else -1
 
 async def restore_roles(guild, member):
     if member.id in temp_saved_roles:
@@ -60,11 +68,11 @@ async def on_ready():
 @bot.tree.command(name="radao", description="Đưa một con khỉ ra đảo để chiêm nghiệm cuộc đời.")
 @app_commands.describe(
     member='Con khỉ cần ra đảo',
-    time='Thời gian ra đảo (e.g., 10s, 5m, 1h)',
+    time='Thời gian ra đảo (vd: 1h30m, 10s, 1d2h)',
     reason='Nguyên nhân lùi hóa'
 )
 @commands.has_permissions(administrator=True) 
-async def radao_slash(interaction: discord.Interaction, member: discord.Member, time: str, reason: Optional[str] = None):
+async def radao_slash(interaction: discord.Interaction, member: discord.Member, time_input: str, reason: Optional[str] = None): 
     if reason is None:
         reason = "Thằng ban thích thì cho ra đảo thôi!"
         
@@ -83,9 +91,9 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
         await interaction.response.send_message(f"Đồng loại với nhau cả mà!", ephemeral=True)
         return
 
-    seconds = convert_time(time)
+    seconds = convert_time(time_input)
     if seconds == -1:
-        await interaction.response.send_message("Sai định dạng thời gian (10s, 5m, 1h).", ephemeral=True)
+        await interaction.response.send_message("Sai định dạng thời gian (vd: 1h30m, 90s, 1d).", ephemeral=True)
         return
 
     guild = interaction.guild
@@ -114,17 +122,18 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
             await member.remove_roles(*roles_to_remove_objects, reason=f"Lý do: {reason}")
         except Exception as e:
             print(f"Không thể gỡ role chỉ định: {e}")
-
     try:
         await member.add_roles(role_radao, reason=f"Lý do: {reason}")
-        await interaction.response.send_message(f"Bonk 🔨 bà zà mày ra đảo trong **{time}** vì: **{reason}**.")
+        await interaction.response.send_message(f"Bonk 🔨 bà zà mày ra đảo trong **{time_input}** vì: **{reason}**.")
     except Exception as e:
         await interaction.response.send_message(f"Lỗi cấp role Radao: {e}", ephemeral=True)
         return
 
     channel_name = f"dao-khi-cua-{member.display_name}"
     created_channel = None
-
+    end_time_timestamp = int(time.time() + seconds)
+    discord_timestamp = f"<t:{end_time_timestamp}:R>" 
+    full_date_timestamp = f"<t:{end_time_timestamp}:F>"
     try:
         created_channel = await guild.create_text_channel(
             name=channel_name,
@@ -133,11 +142,11 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
         )
         
         await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
-        
-        await created_channel.send(f"Chào mừng {member.mention}! Ở đây {time} nhé.")
+        await created_channel.send(f"Chào mừng {member.mention}! Bạn sẽ được thả tự do {discord_timestamp} ({full_date_timestamp}).")
 
         try:
             await created_channel.send(f"Mày ra đảo vì **{reason}**")
+            await created_channel.send(f"Thời gian đếm ngược: **{discord_timestamp}**")
             await created_channel.send("Ngồi đây bị Rick Lăn nhé :Đ!")
             await created_channel.send("https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713")
         except Exception as e:
@@ -146,7 +155,9 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
         
     except Exception as e:
         await interaction.followup.send(f"Lỗi tạo kênh: {e}", ephemeral=True)
+    
     await asyncio.sleep(seconds)
+    
     member = guild.get_member(member.id) 
     if member and role_radao in member.roles:
         try:
@@ -157,7 +168,6 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
         if created_channel:
              try:
                 await created_channel.delete()
-                await interaction.followup.send(f"{member.display_name} tiến hóa thành người sau ({time}).")
              except: pass
 
 @bot.tree.command(name="vebo", description="Dùng thuốc tiến hóa lên con khỉ đang ở đảo.")
@@ -180,18 +190,9 @@ async def vebo_slash(interaction: discord.Interaction, member: discord.Member):
     else:
         await interaction.response.send_message(f"{member.name} không có ở đảo.", ephemeral=True)
 
-    # Xóa kênh liên quan
     if category:
         for channel in category.text_channels:
             if str(member.id) in channel.name or (channel.topic and str(member.id) in channel.topic):
                 try: await channel.delete()
                 except: pass
 bot.run(os.getenv('TOKEN'))
-
-
-
-
-
-
-
-
