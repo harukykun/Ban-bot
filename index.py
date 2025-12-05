@@ -65,7 +65,9 @@ async def on_ready():
 )
 @commands.has_permissions(administrator=True) 
 async def radao_slash(interaction: discord.Interaction, member: discord.Member, time: str, reason: Optional[str] = None):
-    
+    if reason is None:
+        reason = "Thích thì ban!"
+        
     if member.id == interaction.user.id:
         await interaction.response.send_message("Sao lại tự bắn vào dé chính mình thế? Khùng hả?", ephemeral=True)
         return
@@ -185,6 +187,7 @@ async def vebo_slash(interaction: discord.Interaction, member: discord.Member):
                 try: await channel.delete()
                 except: pass
 bot.run(os.getenv('TOKEN'))
+
 
 
 
