@@ -68,11 +68,11 @@ async def on_ready():
 @bot.tree.command(name="radao", description="Đưa một con khỉ ra đảo để chiêm nghiệm cuộc đời.")
 @app_commands.describe(
     member='Con khỉ cần ra đảo',
-    time='Thời gian ra đảo (vd: 1h30m, 10s, 1d2h)',
+    period='Thời gian ra đảo (vd: 1h30m, 10s, 1d2h)',
     reason='Nguyên nhân lùi hóa'
 )
 @commands.has_permissions(administrator=True) 
-async def radao_slash(interaction: discord.Interaction, member: discord.Member, time_input: str, reason: Optional[str] = None): 
+async def radao_slash(interaction: discord.Interaction, member: discord.Member, period: str, reason: Optional[str] = None): 
     if reason is None:
         reason = "Thằng ban thích thì cho ra đảo thôi!"
         
@@ -91,7 +91,7 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
         await interaction.response.send_message(f"Đồng loại với nhau cả mà!", ephemeral=True)
         return
 
-    seconds = convert_time(time_input)
+    seconds = convert_time(period)
     if seconds == -1:
         await interaction.response.send_message("Sai định dạng thời gian (vd: 1h30m, 90s, 1d).", ephemeral=True)
         return
@@ -124,7 +124,7 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
             print(f"Không thể gỡ role chỉ định: {e}")
     try:
         await member.add_roles(role_radao, reason=f"Lý do: {reason}")
-        await interaction.response.send_message(f"Bonk 🔨 bà zà mày ra đảo trong **{time_input}** vì: **{reason}**.")
+        await interaction.response.send_message(f"Bonk 🔨 bà zà mày ra đảo trong **{period}** vì: **{reason}**.")
     except Exception as e:
         await interaction.response.send_message(f"Lỗi cấp role Radao: {e}", ephemeral=True)
         return
@@ -196,3 +196,4 @@ async def vebo_slash(interaction: discord.Interaction, member: discord.Member):
                 try: await channel.delete()
                 except: pass
 bot.run(os.getenv('TOKEN'))
+
