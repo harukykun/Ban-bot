@@ -3,6 +3,7 @@ from discord.ext import commands
 import asyncio
 import os
 from discord import app_commands 
+from typing import Optional
 TARGET_ROLE_ID = 1442769995783475292  
 TARGET_CATEGORY_ID = 1442769574285283399 
 GIF_STICKER_ID = 1443617401538347108     
@@ -184,6 +185,7 @@ async def vebo_slash(interaction: discord.Interaction, member: discord.Member):
                 try: await channel.delete()
                 except: pass
 bot.run(os.getenv('TOKEN'))
+
 
 
 
