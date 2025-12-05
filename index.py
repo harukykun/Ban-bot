@@ -129,7 +129,7 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
         created_channel = await guild.create_text_channel(
             name=channel_name,
             category=category, 
-            topic=f"Đảo khỉ của {member.nickname} - Lý do ra đảo: {reason}" 
+            topic=f"Đảo khỉ của {member.display_name} - Lý do ra đảo: {reason}" 
         )
         
         await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
@@ -157,7 +157,7 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
         if created_channel:
              try:
                 await created_channel.delete()
-                await interaction.followup.send(f"{member.nickname} tiến hóa thành người sau ({time}).")
+                await interaction.followup.send(f"{member.display_name} tiến hóa thành người sau ({time}).")
              except: pass
 
 @bot.tree.command(name="vebo", description="Dùng thuốc tiến hóa lên con khỉ đang ở đảo.")
@@ -187,6 +187,7 @@ async def vebo_slash(interaction: discord.Interaction, member: discord.Member):
                 try: await channel.delete()
                 except: pass
 bot.run(os.getenv('TOKEN'))
+
 
 
 
