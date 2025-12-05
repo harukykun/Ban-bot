@@ -66,7 +66,7 @@ async def on_ready():
 @commands.has_permissions(administrator=True) 
 async def radao_slash(interaction: discord.Interaction, member: discord.Member, time: str, reason: Optional[str] = None):
     if reason is None:
-        reason = "Thích thì ban!"
+        reason = "Thằng ban thích thì cho ra đảo thôi!"
         
     if member.id == interaction.user.id:
         await interaction.response.send_message("Sao lại tự bắn vào dé chính mình thế? Khùng hả?", ephemeral=True)
@@ -129,7 +129,7 @@ async def radao_slash(interaction: discord.Interaction, member: discord.Member, 
         created_channel = await guild.create_text_channel(
             name=channel_name,
             category=category, 
-            topic=f"Kênh phạt của {member.id} - Lý do: {reason}" 
+            topic=f"Đảo khỉ của {member.username} - Lý do ra đảo: {reason}" 
         )
         
         await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
@@ -187,6 +187,7 @@ async def vebo_slash(interaction: discord.Interaction, member: discord.Member):
                 try: await channel.delete()
                 except: pass
 bot.run(os.getenv('TOKEN'))
+
 
 
 
