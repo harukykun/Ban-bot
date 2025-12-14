@@ -264,27 +264,20 @@ async def vebo_slash(interaction: discord.Interaction, monkeys: str):
 
     response_message = ""
     if unbanned_members:
-<<<<<<< HEAD
         response_message += "Ân xá cho: " + ", ".join(unbanned_members) + "\n"
     
     if skipped_members:
         if unbanned_members: response_message += "\n"
         response_message += f"**Ân xá** cho **{len(skipped_members)}** khỉ:\n"
-=======
         response_message += f"Đã ân xá cho **{len(unbanned_members)}** khỉ!\n"
         response_message += "Danh sách: " + ", ".join(unbanned_members) + "\n"
     
     if skipped_members:
         if unbanned_members: response_message += "\n"
         response_message += f"**Bỏ qua** cho **{len(skipped_members)}** khỉ:\n"
->>>>>>> 8f6af691bad13571856d1b8e35ad686d6c1a2f28
         
     if not unbanned_members and not skipped_members:
          response_message = "Không có con khỉ nào."
 
     await interaction.followup.send(response_message)
-<<<<<<< HEAD
 bot.run(os.getenv('TOKEN'))
-=======
-bot.run(os.getenv('TOKEN'))
->>>>>>> 8f6af691bad13571856d1b8e35ad686d6c1a2f28
