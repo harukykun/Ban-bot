@@ -214,14 +214,10 @@ async def radao_slash(interaction: discord.Interaction, monkeys: str, period: st
     response_message = ""
     if banned_members:
         response_message += f"**Bonk 🔨** {len(banned_members)} khỉ ra đảo trong **{period}** vì: **{reason}**.\n"
-<<<<<<< HEAD
-    
     if skipped_members:
         if banned_members: response_message += "\n"
         response_message += f"**Tha cho** {len(skipped_members)} khỉ:\n"
-=======
         response_message += "Danh sách: " + ", ".join(banned_members) + "\n"
-     
     if not banned_members and not skipped_members:
          response_message = "Không có thành viên hợp lệ nào được tìm thấy hoặc tất cả đều không thể bị ban."
 
