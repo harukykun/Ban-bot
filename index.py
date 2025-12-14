@@ -44,6 +44,10 @@ def convert_time(time_str):
     return total_seconds if found_valid and total_seconds > 0 else -1
 
 def parse_members_input(guild: discord.Guild, members_input: str) -> list[discord.Member]:
+<<<<<<< HEAD
+=======
+    """Phân tích chuỗi đầu vào để lấy danh sách thành viên hợp lệ từ mention hoặc ID."""
+>>>>>>> 8f6af691bad13571856d1b8e35ad686d6c1a2f28
     members = []
     id_pattern = re.compile(r'<@!?(\d+)>')
     parts = re.split(r'[,\s]+', members_input.strip())
@@ -214,11 +218,14 @@ async def radao_slash(interaction: discord.Interaction, members_input: str, peri
     response_message = ""
     if banned_members:
         response_message += f"**Bonk 🔨** {len(banned_members)} khỉ ra đảo trong **{period}** vì: **{reason}**.\n"
+<<<<<<< HEAD
     
     if skipped_members:
         if banned_members: response_message += "\n"
         response_message += f"**Tha cho** {len(skipped_members)} khỉ:\n"
-        
+=======
+        response_message += "Danh sách: " + ", ".join(banned_members) + "\n"
+     
     if not banned_members and not skipped_members:
          response_message = "Không có thành viên hợp lệ nào được tìm thấy hoặc tất cả đều không thể bị ban."
 
@@ -265,14 +272,27 @@ async def vebo_slash(interaction: discord.Interaction, members_input: str):
 
     response_message = ""
     if unbanned_members:
+<<<<<<< HEAD
         response_message += "Ân xá cho: " + ", ".join(unbanned_members) + "\n"
     
     if skipped_members:
         if unbanned_members: response_message += "\n"
         response_message += f"**Ân xá** cho **{len(skipped_members)}** khỉ:\n"
+=======
+        response_message += f"Đã ân xá cho **{len(unbanned_members)}** khỉ!\n"
+        response_message += "Danh sách: " + ", ".join(unbanned_members) + "\n"
+    
+    if skipped_members:
+        if unbanned_members: response_message += "\n"
+        response_message += f"**Bỏ qua** cho **{len(skipped_members)}** khỉ:\n"
+>>>>>>> 8f6af691bad13571856d1b8e35ad686d6c1a2f28
         
     if not unbanned_members and not skipped_members:
          response_message = "Không có con khỉ nào."
 
     await interaction.followup.send(response_message)
+<<<<<<< HEAD
 bot.run(os.getenv('TOKEN'))
+=======
+bot.run(os.getenv('TOKEN'))
+>>>>>>> 8f6af691bad13571856d1b8e35ad686d6c1a2f28
