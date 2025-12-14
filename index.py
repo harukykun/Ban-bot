@@ -43,14 +43,10 @@ def convert_time(time_str):
         
     return total_seconds if found_valid and total_seconds > 0 else -1
 
-def parse_members_input(guild: discord.Guild, members_input: str) -> list[discord.Member]:
-<<<<<<< HEAD
-=======
-    """Phân tích chuỗi đầu vào để lấy danh sách thành viên hợp lệ từ mention hoặc ID."""
->>>>>>> 8f6af691bad13571856d1b8e35ad686d6c1a2f28
+def parse_monkeys(guild: discord.Guild, monkeys: str) -> list[discord.Member]:
     members = []
     id_pattern = re.compile(r'<@!?(\d+)>')
-    parts = re.split(r'[,\s]+', members_input.strip())
+    parts = re.split(r'[,\s]+', monkeys.strip())
     
     for part in parts:
         if not part: continue
@@ -163,12 +159,12 @@ async def on_ready():
 
 @bot.tree.command(name="radao", description="Đưa một con khỉ ra đảo để chiêm nghiệm cuộc đời.")
 @app_commands.describe(
-    members_input='Các con khỉ cần ra đảo (dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy)',
+    monkeys='Các con khỉ cần ra đảo (dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy)',
     period='Thời gian ra đảo (vd: 1h30m, 10s, 1d2h)',
     reason='Nguyên nhân lùi hóa'
 )
 @commands.has_permissions(administrator=True) 
-async def radao_slash(interaction: discord.Interaction, members_input: str, period: str, reason: Optional[str] = None): 
+async def radao_slash(interaction: discord.Interaction, monkeys: str, period: str, reason: Optional[str] = None): 
     if reason is None:
         reason = "Thằng ban thích thì cho ra đảo thôi!"
         
@@ -178,7 +174,7 @@ async def radao_slash(interaction: discord.Interaction, members_input: str, peri
         return
         
     guild = interaction.guild
-    members_to_process = parse_members_input(guild, members_input)
+    members_to_process = parse_monkeys(guild, monkeys)
     
     if not members_to_process:
         await interaction.response.send_message("Không tìm thấy thành viên hợp lệ nào trong danh sách. Vui lòng sử dụng mention (@user) hoặc ID.", ephemeral=True)
@@ -233,15 +229,15 @@ async def radao_slash(interaction: discord.Interaction, members_input: str, peri
 
 @bot.tree.command(name="vebo", description="Dùng thuốc tiến hóa lên con khỉ đang ở đảo.")
 @app_commands.describe(
-    members_input='Các con khỉ cần thuốc (dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy)'
+    monkeys='Các con khỉ cần thuốc (dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy)'
 )
 @commands.has_permissions(administrator=True)
-async def vebo_slash(interaction: discord.Interaction, members_input: str):
+async def vebo_slash(interaction: discord.Interaction, monkeys: str):
     guild = interaction.guild
     role_radao = guild.get_role(TARGET_ROLE_ID)
     category = guild.get_channel(TARGET_CATEGORY_ID)
 
-    members_to_process = parse_members_input(guild, members_input)
+    members_to_process = parse_monkeys(guild, monkeys)
     
     if not members_to_process:
         await interaction.response.send_message("Không tìm thấy thành viên hợp lệ nào trong danh sách.", ephemeral=True)
