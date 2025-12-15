@@ -7,6 +7,7 @@ from typing import Optional
 import re 
 import time
 
+MAIN_GUILD_ID = discord.Object(id=1397175419664470031)
 TARGET_ROLE_ID = 1442769995783475292  
 TARGET_CATEGORY_ID = 1442769574285283399 
 GIF_STICKER_ID = 1443617401538347108     
@@ -149,15 +150,17 @@ async def perform_radao(interaction: discord.Interaction, member: discord.Member
 
 @bot.event
 async def on_ready():
-    print(f'Bot đã sẵn sàng: {bot.user}')
+    print(f'Bot chính đã sẵn sàng: {bot.user}')
     try:
-        synced = await bot.tree.sync()
         await bot.load_extension('second_sever')
-        print(f"Đã đồng bộ hóa {len(synced)} lệnh Slash Commands.")
+        
+        synced_main = await bot.tree.sync(guild=MAIN_GUILD_ID)
+        print(f"Đã đồng bộ hóa {len(synced_main)} lệnh cho Server Chính.")
+        
     except Exception as e:
-        print(f"Lỗi đồng bộ hóa lệnh Slash: {e}")
+        print(f"Lỗi tải extension hoặc đồng bộ: {e}")
 
-@bot.tree.command(name="radao", description="Đưa một con khỉ ra đảo để chiêm nghiệm cuộc đời.")
+@bot.tree.command(name="radao", description="Đưa một con khỉ ra đảo (Server Chính).", guild=MAIN_GUILD_ID)
 @app_commands.describe(
     monkeys='Các con khỉ cần ra đảo (dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy)',
     period='Thời gian ra đảo (vd: 1h30m, 10s, 1d2h)',
@@ -186,7 +189,6 @@ async def radao_slash(interaction: discord.Interaction, monkeys: str, period: st
     role_radao = guild.get_role(TARGET_ROLE_ID)
     
     for member in members_to_process:
-        
         is_skipped = False
         skip_reason = ""
         
@@ -223,7 +225,7 @@ async def radao_slash(interaction: discord.Interaction, monkeys: str, period: st
 
     await interaction.followup.send(response_message)
 
-@bot.tree.command(name="vebo", description="Dùng thuốc tiến hóa lên con khỉ đang ở đảo.")
+@bot.tree.command(name="vebo", description="Dùng thuốc tiến hóa lên con khỉ đang ở đảo (Server Chính).", guild=MAIN_GUILD_ID)
 @app_commands.describe(
     monkeys='Các con khỉ cần thuốc (dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy)'
 )
@@ -280,4 +282,5 @@ async def vebo_slash(interaction: discord.Interaction, monkeys: str):
          response_message = "Không có con khỉ nào."
 
     await interaction.followup.send(response_message)
+
 bot.run(os.getenv('TOKEN'))
