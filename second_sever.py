@@ -7,13 +7,13 @@ import time
 import asyncio
 
 # --- CẤU HÌNH CHO SERVER PHỤ (SECOND) ---
-SECOND_GUILD_ID = discord.Object(id=1450079520756465758) # Thay ID Server phụ vào đây
+SECOND_GUILD_ID = discord.Object(id=1450079520756465758) 
 TARGET_ROLE_ID = 1450101924845326417
 TARGET_CATEGORY_ID = 1450095959492005888
 
 ROLES_TO_REMOVE = [
-1450080529927110658,
-1450099654258589718
+    1450080529927110658,
+    1450099654258589718
 ]
 
 def convert_time(time_str):
@@ -100,12 +100,13 @@ class SecondServerCog(commands.Cog):
             discord_timestamp = f"<t:{end_time_timestamp}:R>" 
             full_date_timestamp = f"<t:{end_time_timestamp}:F>"
             try:
+                # --- CẬP NHẬT: THÊM SLOWMODE 10s ---
                 created_channel = await guild.create_text_channel(
-                name=channel_name,
-                category=category, 
-                topic=f"ID: {member.id} | Đảo khỉ của {member.display_name} - Lý do ra đảo: {reason}",
-                slowmode_delay=10 
-            )
+                    name=channel_name,
+                    category=category, 
+                    topic=f"ID: {member.id} | Nhà thờ của {member.display_name} - Lý do thanh tẩy: {reason}",
+                    slowmode_delay=10
+                )
                 await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
                 await created_channel.send(f"Chào mừng {member.mention}! Bạn sẽ được thanh tẩy sau {discord_timestamp} ({full_date_timestamp}).")
                 try:
@@ -185,7 +186,7 @@ class SecondServerCog(commands.Cog):
              response_message = "Không có thành viên hợp lệ nào được tìm thấy hoặc tất cả đều không thể bị ban."
         await interaction.followup.send(response_message)
 
-    @app_commands.command(name="giaicuu", description="Dùng thuốc tiến hóa lên con khỉ đang ở đảo (Server Phụ).")
+    @app_commands.command(name="giaicuu", description="Giải cứu con chiên ở nhà thờ.")
     @app_commands.describe(
         monkeys='dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy'
     )
