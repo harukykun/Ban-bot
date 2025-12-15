@@ -81,7 +81,6 @@ async def restore_roles(guild, member):
         del temp_saved_roles[member.id]
 
 async def perform_radao(interaction: discord.Interaction, member: discord.Member, seconds: int, period: str, reason: str):
-    """Thực hiện logic đưa một thành viên ra đảo (long-running task)."""
     guild = interaction.guild
     role_radao = guild.get_role(TARGET_ROLE_ID)
     category = guild.get_channel(TARGET_CATEGORY_ID)
@@ -153,6 +152,7 @@ async def on_ready():
     print(f'Bot đã sẵn sàng: {bot.user}')
     try:
         synced = await bot.tree.sync()
+        await bot.load_extension('second_sever')
         print(f"Đã đồng bộ hóa {len(synced)} lệnh Slash Commands.")
     except Exception as e:
         print(f"Lỗi đồng bộ hóa lệnh Slash: {e}")
