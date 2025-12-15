@@ -31,10 +31,10 @@ def convert_time(time_str):
         elif unit == 'd': total_seconds += val * 86400
     return total_seconds if found_valid and total_seconds > 0 else -1
 
-def parse_monkeys(guild: discord.Guild, monkeys: str) -> list[discord.Member]:
+def parse_di_giao(guild: discord.Guild, di_giao: str) -> list[discord.Member]:
     members = []
     id_pattern = re.compile(r'<@!?(\d+)>')
-    parts = re.split(r'[,\s]+', monkeys.strip())
+    parts = re.split(r'[,\s]+', di_giao.strip())
     
     for part in parts:
         if not part: continue
@@ -134,13 +134,13 @@ class SecondServerCog(commands.Cog):
 
     @app_commands.command(name="thanhtay", description="Đưa một chiên đến nhà thờ để thanh tẩy.")
     @app_commands.describe(
-        monkeys='Các con chiến cần thanh tẩy (dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy)',
+        di_giao='Các con chiến cần thanh tẩy (dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy)',
         period='Thời gian thanh tẩy (vd: 1h30m, 10s, 1d2h)',
         reason='Nguyên nhân dị giáo hóa'
     )
     @app_commands.guilds(SECOND_GUILD_ID)
     @commands.has_permissions(administrator=True) 
-    async def radao_slash(self, interaction: discord.Interaction, monkeys: str, period: str, reason: Optional[str] = None): 
+    async def radao_slash(self, interaction: discord.Interaction, di_giao: str, period: str, reason: Optional[str] = None): 
         if reason is None:
             reason = "Thằng ban thích thì cho đi thanh tẩy thôi!"
         seconds = convert_time(period)
@@ -148,7 +148,7 @@ class SecondServerCog(commands.Cog):
             await interaction.response.send_message("Sai định dạng thời gian (vd: 1h30m, 90s, 1d).", ephemeral=True)
             return
         guild = interaction.guild
-        members_to_process = parse_monkeys(guild, monkeys)
+        members_to_process = parse_di_giao(guild, di_giao)
         if not members_to_process:
             await interaction.response.send_message("Không tìm thấy thành viên hợp lệ nào trong danh sách. Vui lòng sử dụng mention (@user) hoặc ID.", ephemeral=True)
             return
@@ -188,15 +188,15 @@ class SecondServerCog(commands.Cog):
 
     @app_commands.command(name="giaicuu", description="Giải cứu con chiên ở nhà thờ.")
     @app_commands.describe(
-        monkeys='dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy'
+        di_giao='dùng mention @, ID, cách nhau bởi khoảng trắng hoặc dấu phẩy'
     )
     @app_commands.guilds(SECOND_GUILD_ID)
     @commands.has_permissions(administrator=True)
-    async def vebo_slash(self, interaction: discord.Interaction, monkeys: str):
+    async def vebo_slash(self, interaction: discord.Interaction, di_giao: str):
         guild = interaction.guild
         role_radao = guild.get_role(TARGET_ROLE_ID)
         category = guild.get_channel(TARGET_CATEGORY_ID)
-        members_to_process = parse_monkeys(guild, monkeys)
+        members_to_process = parse_di_giao(guild, di_giao)
         if not members_to_process:
             await interaction.response.send_message("Không tìm thấy thành viên hợp lệ nào trong danh sách.", ephemeral=True)
             return
