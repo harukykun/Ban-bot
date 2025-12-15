@@ -101,10 +101,11 @@ class SecondServerCog(commands.Cog):
             full_date_timestamp = f"<t:{end_time_timestamp}:F>"
             try:
                 created_channel = await guild.create_text_channel(
-                    name=channel_name,
-                    category=category, 
-                    topic=f"ID: {member.id} | Nhà thờ của {member.display_name} - Lý do thanh tẩy: {reason}"
-                )
+                name=channel_name,
+                category=category, 
+                topic=f"ID: {member.id} | Đảo khỉ của {member.display_name} - Lý do ra đảo: {reason}",
+                slowmode_delay=10 
+            )
                 await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
                 await created_channel.send(f"Chào mừng {member.mention}! Bạn sẽ được thanh tẩy sau {discord_timestamp} ({full_date_timestamp}).")
                 try:
