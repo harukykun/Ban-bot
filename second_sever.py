@@ -12,7 +12,8 @@ TARGET_CATEGORY_ID = 1450095959492005888
 
 ROLES_TO_REMOVE = [
     1450080529927110658,
-    1450099654258589718
+    1450099654258589718,
+    1450080490634743888
 ]
 
 def convert_time(time_str):
@@ -155,14 +156,13 @@ class SecondServerCog(commands.Cog):
             is_skipped = False
             skip_reason = ""
             if member.id == interaction.user.id:
-                skip_reason = "Tự ban"
-                is_skipped = True
+                response_message += f"Người anh em sao tự bắn vào chân thế"
             elif member.id == interaction.guild.owner_id:
-                skip_reason = "Chủ server"
-                is_skipped = True
-            elif member.top_role >= interaction.user.top_role:
-                skip_reason = "Role cao hơn/bằng"
-                is_skipped = True
+                response_message += f"Người anh em sao lại ban chủ sever tính phổng đạn à?"
+            elif member.top_role > interaction.user.top_role:
+                response_message += f"Ban bố bạn hả"
+            elif member.top_role = interaction.user.top_role:
+                response_message += f"Đồng nghiệp với nhau cả ban gì"
             if role_radao and role_radao in member.roles:
                 skip_reason = "Đang ở nhà thờ"
                 is_skipped = True
@@ -174,9 +174,6 @@ class SecondServerCog(commands.Cog):
         response_message = ""
         if banned_members:
             response_message += f"**Bonk 🔨** {len(banned_members)} dị giáo bị thanh tẩy **{period}** vì: **{reason}**.\n"
-        if skipped_members:
-            if banned_members: response_message += "\n"
-            response_message += f"**Tha cho** {len(skipped_members)} dị giáo.\n"
         if not banned_members and not skipped_members:
              response_message = "Không có thành viên hợp lệ."
         await interaction.followup.send(response_message)
