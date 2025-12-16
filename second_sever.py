@@ -173,18 +173,15 @@ class SecondServerCog(commands.Cog):
                 skip_reason = "Đang ở nhà thờ rồi"
                 is_skipped = True
             if is_skipped:
-                skipped_members.append(f"**{member.display_name}** ({skip_reason})")
+                skipped_members.append(f"{skip_reason}")
                 continue
             asyncio.create_task(self.perform_radao(interaction, member, seconds, period, reason))
             banned_members.append(f"**{member.display_name}**")
         response_message = ""
         if banned_members:
             response_message += f"**Bonk 🔨** {len(banned_members)} dị giáo bị thanh tẩy **{period}** vì: **{reason}**.\n"
-            response_message += f"Danh sách: {', '.join(banned_members)}\n"
-        
         if skipped_members:
-            response_message += "\n**Bỏ qua:**\n"
-            response_message += "\n".join([f"- {s}" for s in skipped_members])
+            response_message += f'{skipped_members}'
 
         if not banned_members and not skipped_members:
              response_message = "Không có thành viên hợp lệ."
