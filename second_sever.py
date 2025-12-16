@@ -5,8 +5,6 @@ from typing import Optional
 import re
 import time
 import asyncio
-
-# --- CẤU HÌNH ---
 SECOND_GUILD_ID = discord.Object(id=1450079520756465758) 
 TARGET_ROLE_ID = 1450101924845326417
 TARGET_CATEGORY_ID = 1450095959492005888
@@ -16,8 +14,6 @@ ROLES_TO_REMOVE = [
     1450099654258589718,
     1450080490634743888
 ]
-
-# --- HÀM HỖ TRỢ ---
 def convert_time(time_str):
     time_str = time_str.lower().replace(" ", "")
     total_seconds = 0
@@ -54,8 +50,6 @@ def parse_di_giao(guild: discord.Guild, di_giao: str) -> list[discord.Member]:
             if member and member not in members:
                 members.append(member)
     return members
-
-# --- COG CHÍNH ---
 class SecondServerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -82,8 +76,6 @@ class SecondServerCog(commands.Cog):
 
         if not role_radao or not category:
             return
-
-        # 1. Lưu và Xóa role cũ
         removed_roles_list = []
         roles_to_remove_objects = []
         
@@ -97,8 +89,6 @@ class SecondServerCog(commands.Cog):
             try:
                 await member.remove_roles(*roles_to_remove_objects, reason=f"[ThanhTay] {reason}")
             except Exception: pass
-
-        # 2. Thêm role Radao và tạo kênh
         try:
             await member.add_roles(role_radao, reason=f"[ThanhTay] {reason}")
             channel_name = f"nha-tho-cua-{member.display_name}"
@@ -114,10 +104,7 @@ class SecondServerCog(commands.Cog):
                     topic=f"ID: {member.id} | Nhà thờ của {member.display_name} - Lý do thanh tẩy: {reason}",
                     slowmode_delay=10
                 )
-                # Set permission
                 await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
-                
-                # Gửi thông báo
                 await created_channel.send(f"Chào mừng {member.mention}! Bạn sẽ được thanh tẩy sau {discord_timestamp} ({full_date_timestamp}).")
                 try:
                     await created_channel.send(f"Bạn bị thanh tẩy vì **{reason}**")
@@ -126,19 +113,13 @@ class SecondServerCog(commands.Cog):
                 except Exception:
                     await created_channel.send(f"Lần này méo có rick roll mày may đấy")
             except Exception: pass
-
-            # 3. Chờ hết thời gian
             await asyncio.sleep(seconds)
-
-            # 4. Trả tự do
-            member = guild.get_member(member.id) # Lấy lại object mới nhất
+            member = guild.get_member(member.id) 
             if member and role_radao in member.roles:
                 try:
                     await member.remove_roles(role_radao, reason="Hết giờ thanh tẩy") 
                     await self.restore_roles(guild, member)
                 except Exception: pass
-
-            # 5. Xóa kênh
             if created_channel:
                  try: await created_channel.delete()
                  except Exception: pass
@@ -155,7 +136,6 @@ class SecondServerCog(commands.Cog):
     async def thanhtay_slash(self, interaction: discord.Interaction, di_giao: str, period: str, reason: Optional[str] = None): 
         if reason is None:
             reason = "Thích thì cho đi thanh tẩy thôi!"
-        
         seconds = convert_time(period)
         if seconds == -1:
             await interaction.response.send_message("Sai định dạng thời gian (vd: 1h30m, 90s, 1d).", ephemeral=True)
