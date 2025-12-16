@@ -100,7 +100,6 @@ class SecondServerCog(commands.Cog):
             discord_timestamp = f"<t:{end_time_timestamp}:R>" 
             full_date_timestamp = f"<t:{end_time_timestamp}:F>"
             try:
-                # --- CẬP NHẬT: THÊM SLOWMODE 10s ---
                 created_channel = await guild.create_text_channel(
                     name=channel_name,
                     category=category, 
