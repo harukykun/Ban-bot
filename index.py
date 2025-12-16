@@ -122,7 +122,7 @@ async def on_ready():
         print("   -> Kiểm tra lại ID Server hoặc mời Bot vào Server đó.")
     print('------ HOÀN TẤT ------')
 
-@bot.tree.command(name="radao", description="[Server Chính] Cho khỉ ra đảo.", guild=MAIN_GUILD_ID)
+@bot.tree.command(name="radao", description="Cho khỉ ra đảo.", guild=MAIN_GUILD_ID)
 @app_commands.describe(monkeys='Tag hoặc ID', period='VD: 10m, 1h', reason='Lý do')
 @commands.has_permissions(administrator=True)
 async def radao(interaction: discord.Interaction, monkeys: str, period: str, reason: str = "Không rõ"):
@@ -143,7 +143,7 @@ async def radao(interaction: discord.Interaction, monkeys: str, period: str, rea
     
     await interaction.followup.send("\n".join(msg))
 
-@bot.tree.command(name="vebo", description="[Server Chính] Hồi sinh khỉ.", guild=MAIN_GUILD_ID)
+@bot.tree.command(name="vebo", description="Đưa khỉ về bờ.", guild=MAIN_GUILD_ID)
 @commands.has_permissions(administrator=True)
 async def vebo(interaction: discord.Interaction, monkeys: str):
     targets = parse_monkeys(interaction.guild, monkeys)
@@ -168,3 +168,4 @@ async def vebo(interaction: discord.Interaction, monkeys: str):
     await interaction.followup.send("\n".join(msg))
 
 bot.run(os.getenv('TOKEN'))
+
