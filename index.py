@@ -78,7 +78,7 @@ async def restore_roles(guild, member):
         
         if roles_to_add:
             try: await member.add_roles(*roles_to_add)
-            except Exception as e: print(f"Lỗi trả role: {e}")
+            except Exception as e: print(f"ERROR: {e}")
         del temp_saved_roles[member.id]
 
 async def perform_radao(interaction: discord.Interaction, member: discord.Member, seconds: int, period: str, reason: str):
@@ -87,7 +87,6 @@ async def perform_radao(interaction: discord.Interaction, member: discord.Member
     category = guild.get_channel(TARGET_CATEGORY_ID)
 
     if not role_radao or not category:
-        print(f"Lỗi cấu hình ID. Không thể ban {member.display_name}")
         return
     removed_roles_list = []
     roles_to_remove_objects = []
@@ -101,8 +100,9 @@ async def perform_radao(interaction: discord.Interaction, member: discord.Member
         temp_saved_roles[member.id] = removed_roles_list
         try:
             await member.remove_roles(*roles_to_remove_objects, reason=f"[Radao] {reason}")
-        except Exception as e:
-            print(f"Không thể gỡ role chỉ định cho {member.display_name}: {e}")
+        except Exception:
+            pass
+
     try:
         await member.add_roles(role_radao, reason=f"[Radao] {reason}")
         channel_name = f"dao-khi-cua-{member.display_name}"
@@ -125,29 +125,29 @@ async def perform_radao(interaction: discord.Interaction, member: discord.Member
                 await created_channel.send(f"Mày ra đảo vì **{reason}**")
                 await created_channel.send("Ngồi đây bị Rick Lăn nhé :Đ!")
                 await created_channel.send("https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713")
-            except Exception as e:
-                print(f"Lỗi gửi link cho {member.display_name}: {e}")
+            except Exception:
                 await created_channel.send(f"Lần này méo có rick roll mày may đấy")
             
-        except Exception as e:
-            print(f"Lỗi tạo kênh cho {member.display_name}: {e}")
+        except Exception:
+            pass
+
         await asyncio.sleep(seconds)
         member = guild.get_member(member.id) 
         if member and role_radao in member.roles:
             try:
                 await member.remove_roles(role_radao, reason="Hết giờ ra đảo") 
                 await restore_roles(guild, member)
-            except Exception as e:
-                print(f"Lỗi khi unban/trả role cho {member.display_name}: {e}")
+            except Exception:
+                pass
             
         if created_channel:
              try:
                 await created_channel.delete()
-             except Exception as e:
-                print(f"Lỗi xóa kênh cho {member.display_name}: {e}")
+             except Exception:
+                pass
                 
-    except Exception as e:
-        print(f"Lỗi cấp role Radao cho {member.display_name}: {e}")
+    except Exception:
+        pass
 
 @bot.event
 async def on_ready():
@@ -159,7 +159,7 @@ async def on_ready():
         print(f"Đã đồng bộ hóa {len(synced_main)} lệnh cho Server Chính.")
         
     except Exception as e:
-        print(f"Lỗi tải extension hoặc đồng bộ: {e}")
+        print(f"Lỗi tải extension: {e}")
 
 @bot.tree.command(name="radao", description="Đưa một con khỉ ra đảo (Server Chính).", guild=MAIN_GUILD_ID)
 @app_commands.describe(
@@ -181,7 +181,7 @@ async def radao_slash(interaction: discord.Interaction, monkeys: str, period: st
     members_to_process = parse_monkeys(guild, monkeys)
     
     if not members_to_process:
-        await interaction.response.send_message("Không tìm thấy thành viên hợp lệ nào trong danh sách. Vui lòng sử dụng mention (@user) hoặc ID.", ephemeral=True)
+        await interaction.response.send_message("Không tìm thấy thành viên hợp lệ nào.", ephemeral=True)
         return
     await interaction.response.defer() 
 
@@ -222,7 +222,7 @@ async def radao_slash(interaction: discord.Interaction, monkeys: str, period: st
         response_message += f"**Tha cho** {len(skipped_members)} khỉ:\n"
         response_message += "Danh sách: " + ", ".join(banned_members) + "\n"
     if not banned_members and not skipped_members:
-         response_message = "Không có thành viên hợp lệ nào được tìm thấy hoặc tất cả đều không thể bị ban."
+         response_message = "Không có thành viên hợp lệ."
 
     await interaction.followup.send(response_message)
 
@@ -239,7 +239,7 @@ async def vebo_slash(interaction: discord.Interaction, monkeys: str):
     members_to_process = parse_monkeys(guild, monkeys)
     
     if not members_to_process:
-        await interaction.response.send_message("Không tìm thấy thành viên hợp lệ nào trong danh sách.", ephemeral=True)
+        await interaction.response.send_message("Không tìm thấy thành viên hợp lệ.", ephemeral=True)
         return
 
     await interaction.response.defer()
@@ -271,13 +271,7 @@ async def vebo_slash(interaction: discord.Interaction, monkeys: str):
     
     if skipped_members:
         if unbanned_members: response_message += "\n"
-        response_message += f"**Ân xá** cho **{len(skipped_members)}** khỉ:\n"
-        response_message += f"Đã ân xá cho **{len(unbanned_members)}** khỉ!\n"
-        response_message += "Danh sách: " + ", ".join(unbanned_members) + "\n"
-    
-    if skipped_members:
-        if unbanned_members: response_message += "\n"
-        response_message += f"**Bỏ qua** cho **{len(skipped_members)}** khỉ:\n"
+        response_message += f"**Bỏ qua** cho **{len(skipped_members)}** khỉ.\n"
         
     if not unbanned_members and not skipped_members:
          response_message = "Không có con khỉ nào."
