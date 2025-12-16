@@ -5,7 +5,8 @@ from typing import Optional
 import re
 import time
 import asyncio
-SECOND_GUILD_ID = discord.Object(id=1450079520756465758) 
+
+SECOND_GUILD_ID = discord.Object(id=1450079520756465758)
 TARGET_ROLE_ID = 1450101924845326417
 TARGET_CATEGORY_ID = 1450095959492005888
 
@@ -14,6 +15,7 @@ ROLES_TO_REMOVE = [
     1450099654258589718,
     1450080490634743888
 ]
+
 def convert_time(time_str):
     time_str = time_str.lower().replace(" ", "")
     total_seconds = 0
@@ -50,13 +52,13 @@ def parse_di_giao(guild: discord.Guild, di_giao: str) -> list[discord.Member]:
             if member and member not in members:
                 members.append(member)
     return members
+
 class SecondServerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.temp_saved_roles = {}
 
     async def restore_roles(self, guild, member):
-        """Khôi phục lại role cũ cho thành viên"""
         if member.id in self.temp_saved_roles:
             role_ids = self.temp_saved_roles[member.id]
             roles_to_add = []
@@ -69,7 +71,6 @@ class SecondServerCog(commands.Cog):
             del self.temp_saved_roles[member.id]
 
     async def perform_radao(self, interaction: discord.Interaction, member: discord.Member, seconds: int, period: str, reason: str):
-        """Thực hiện logic thanh tẩy (remove role, add jail role, create channel, wait, restore)"""
         guild = interaction.guild
         role_radao = guild.get_role(TARGET_ROLE_ID)
         category = guild.get_channel(TARGET_CATEGORY_ID)
@@ -151,12 +152,13 @@ class SecondServerCog(commands.Cog):
         await interaction.response.defer() 
         
         banned_members = []
-        skipped_members = ""
+        skipped_members = []
         role_radao = guild.get_role(TARGET_ROLE_ID)
         
         for member in members_to_process:
             is_skipped = False
             skip_reason = ""
+            
             if member.id == interaction.user.id:
                 skip_reason = "Người anh em sao tự bắn vào chân thế"
                 is_skipped = True
@@ -172,16 +174,20 @@ class SecondServerCog(commands.Cog):
             elif role_radao and role_radao in member.roles:
                 skip_reason = "Đang ở nhà thờ rồi"
                 is_skipped = True
+            
             if is_skipped:
-                skipped_members.append(f"{skip_reason}")
+                skipped_members.append(f"- **{member.display_name}**: {skip_reason}")
                 continue
+            
             asyncio.create_task(self.perform_radao(interaction, member, seconds, period, reason))
             banned_members.append(f"**{member.display_name}**")
+            
         response_message = ""
         if banned_members:
             response_message += f"**Bonk 🔨** {len(banned_members)} dị giáo bị thanh tẩy **{period}** vì: **{reason}**.\n"
+        
         if skipped_members:
-            response_message += f'{skipped_members}'
+            response_message += "\n🚫 **Không thể thanh tẩy:**\n" + "\n".join(skipped_members)
 
         if not banned_members and not skipped_members:
              response_message = "Không có thành viên hợp lệ."
