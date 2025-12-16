@@ -6,11 +6,10 @@ from discord import app_commands
 from typing import Optional
 import re 
 import time
-
 MAIN_GUILD_ID = discord.Object(id=1397175419664470031)
 TARGET_ROLE_ID = 1442769995783475292  
 TARGET_CATEGORY_ID = 1442769574285283399 
-SECOND_GUILD_ID_INT = 1450079520756465758
+SECOND_GUILD_ID_INT = 1450079520756465758 
 ROLES_TO_REMOVE = [
     1434043875445702656,
     1408433140363432006,
@@ -25,8 +24,6 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 temp_saved_roles = {}
-
-# --- HÀM HỖ TRỢ ---
 def convert_time(time_str):
     time_str = time_str.lower().replace(" ", "")
     total_seconds = 0
@@ -77,16 +74,25 @@ async def perform_radao(interaction, member, seconds, period, reason):
 
     try:
         await member.add_roles(role_radao, reason=reason)
-        timestamp = int(time.time() + seconds)
+        end_time_timestamp = int(time.time() + seconds)
+        discord_timestamp = f"<t:{end_time_timestamp}:R>" 
+        full_date_timestamp = f"<t:{end_time_timestamp}:F>"
+
         channel = await guild.create_text_channel(
             name=f"dao-khi-{member.display_name}", 
             category=category,
             topic=f"ID: {member.id} | Ra đảo vì: {reason}"
         )
-        await channel.set_permissions(member, read_messages=True, send_messages=True)
-        await channel.send(f"{member.mention} ra đảo đến <t:{timestamp}:R>.\nLý do: **{reason}**")
-        await channel.send("https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713")
         
+        await channel.set_permissions(member, read_messages=True, send_messages=True)
+        await channel.send(f"Chào mừng {member.mention}! Bạn sẽ được thả tự do {discord_timestamp} ({full_date_timestamp}).")
+        try:
+            await channel.send(f"Mày ra đảo vì **{reason}**")
+            await channel.send("Ngồi đây bị Rick Lăn nhé :Đ!")
+            await channel.send("https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713")
+        except Exception:
+            await channel.send(f"Lần này méo có rick roll mày may đấy")
+
         await asyncio.sleep(seconds)
         
         if role_radao in member.roles:
@@ -96,7 +102,6 @@ async def perform_radao(interaction, member, seconds, period, reason):
     except Exception as e:
         print(f"Lỗi quy trình: {e}")
 
-# --- SETUP VÀ SYNC ---
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
@@ -125,7 +130,7 @@ async def on_ready():
 @bot.tree.command(name="radao", description="Cho khỉ ra đảo.", guild=MAIN_GUILD_ID)
 @app_commands.describe(monkeys='Tag hoặc ID', period='VD: 10m, 1h', reason='Lý do')
 @commands.has_permissions(administrator=True)
-async def radao(interaction: discord.Interaction, monkeys: str, period: str, reason: str = "Không rõ"):
+async def radao(interaction: discord.Interaction, monkeys: str, period: str, reason: str = "Thằng ban thích thì cho thôi"):
     seconds = convert_time(period)
     if seconds == -1: return await interaction.response.send_message("Sai thời gian (vd: 10m, 1h).", ephemeral=True)
     
@@ -139,7 +144,7 @@ async def radao(interaction: discord.Interaction, monkeys: str, period: str, rea
             msg.append(f"Bỏ qua {m.mention} (Role cao).")
             continue
         asyncio.create_task(perform_radao(interaction, m, seconds, period, reason))
-        msg.append(f"Bonk {m.mention} ra đảo {period}.")
+        msg.append(f"Bonk🔨 bà zà mài {m.mention} ra đảo trong {period} vì {reason}.")
     
     await interaction.followup.send("\n".join(msg))
 
@@ -157,7 +162,6 @@ async def vebo(interaction: discord.Interaction, monkeys: str):
             await m.remove_roles(role)
             await restore_roles(interaction.guild, m)
             msg.append(f"Đã về bờ: {m.mention}")
-            # Xóa kênh nếu tìm thấy
             cat = interaction.guild.get_channel(TARGET_CATEGORY_ID)
             if cat:
                 for c in cat.text_channels:
@@ -168,4 +172,3 @@ async def vebo(interaction: discord.Interaction, monkeys: str):
     await interaction.followup.send("\n".join(msg))
 
 bot.run(os.getenv('TOKEN'))
-
