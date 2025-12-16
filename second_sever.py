@@ -151,7 +151,7 @@ class SecondServerCog(commands.Cog):
         await interaction.response.defer() 
         
         banned_members = []
-        skipped_members = []
+        skipped_members = ""
         role_radao = guild.get_role(TARGET_ROLE_ID)
         
         for member in members_to_process:
@@ -164,10 +164,10 @@ class SecondServerCog(commands.Cog):
                 skip_reason = "Người anh em sao lại ban chủ sever tính phổng đạn à?"
                 is_skipped = True
             elif member.top_role > interaction.user.top_role:
-                skip_reason = "Ban bố bạn hả (Role họ to hơn)"
+                skip_reason = "Ban bố bạn hả"
                 is_skipped = True
             elif member.top_role == interaction.user.top_role:
-                skip_reason = "Đồng nghiệp với nhau cả ban gì (Role ngang nhau)"
+                skip_reason = "Đồng nghiệp với nhau cả ban gì"
                 is_skipped = True
             elif role_radao and role_radao in member.roles:
                 skip_reason = "Đang ở nhà thờ rồi"
