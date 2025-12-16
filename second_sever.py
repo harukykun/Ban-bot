@@ -6,6 +6,7 @@ import re
 import time
 import asyncio
 
+# --- CẤU HÌNH ---
 SECOND_GUILD_ID = discord.Object(id=1450079520756465758) 
 TARGET_ROLE_ID = 1450101924845326417
 TARGET_CATEGORY_ID = 1450095959492005888
@@ -16,6 +17,7 @@ ROLES_TO_REMOVE = [
     1450080490634743888
 ]
 
+# --- HÀM HỖ TRỢ ---
 def convert_time(time_str):
     time_str = time_str.lower().replace(" ", "")
     total_seconds = 0
@@ -53,12 +55,14 @@ def parse_di_giao(guild: discord.Guild, di_giao: str) -> list[discord.Member]:
                 members.append(member)
     return members
 
+# --- COG CHÍNH ---
 class SecondServerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.temp_saved_roles = {}
 
     async def restore_roles(self, guild, member):
+        """Khôi phục lại role cũ cho thành viên"""
         if member.id in self.temp_saved_roles:
             role_ids = self.temp_saved_roles[member.id]
             roles_to_add = []
@@ -71,12 +75,15 @@ class SecondServerCog(commands.Cog):
             del self.temp_saved_roles[member.id]
 
     async def perform_radao(self, interaction: discord.Interaction, member: discord.Member, seconds: int, period: str, reason: str):
+        """Thực hiện logic thanh tẩy (remove role, add jail role, create channel, wait, restore)"""
         guild = interaction.guild
         role_radao = guild.get_role(TARGET_ROLE_ID)
         category = guild.get_channel(TARGET_CATEGORY_ID)
 
         if not role_radao or not category:
             return
+
+        # 1. Lưu và Xóa role cũ
         removed_roles_list = []
         roles_to_remove_objects = []
         
@@ -91,6 +98,7 @@ class SecondServerCog(commands.Cog):
                 await member.remove_roles(*roles_to_remove_objects, reason=f"[ThanhTay] {reason}")
             except Exception: pass
 
+        # 2. Thêm role Radao và tạo kênh
         try:
             await member.add_roles(role_radao, reason=f"[ThanhTay] {reason}")
             channel_name = f"nha-tho-cua-{member.display_name}"
@@ -98,6 +106,7 @@ class SecondServerCog(commands.Cog):
             end_time_timestamp = int(time.time() + seconds)
             discord_timestamp = f"<t:{end_time_timestamp}:R>" 
             full_date_timestamp = f"<t:{end_time_timestamp}:F>"
+            
             try:
                 created_channel = await guild.create_text_channel(
                     name=channel_name,
@@ -105,7 +114,10 @@ class SecondServerCog(commands.Cog):
                     topic=f"ID: {member.id} | Nhà thờ của {member.display_name} - Lý do thanh tẩy: {reason}",
                     slowmode_delay=10
                 )
+                # Set permission
                 await created_channel.set_permissions(member, read_messages=True, send_messages=True, read_message_history=True)
+                
+                # Gửi thông báo
                 await created_channel.send(f"Chào mừng {member.mention}! Bạn sẽ được thanh tẩy sau {discord_timestamp} ({full_date_timestamp}).")
                 try:
                     await created_channel.send(f"Bạn bị thanh tẩy vì **{reason}**")
@@ -115,14 +127,18 @@ class SecondServerCog(commands.Cog):
                     await created_channel.send(f"Lần này méo có rick roll mày may đấy")
             except Exception: pass
 
+            # 3. Chờ hết thời gian
             await asyncio.sleep(seconds)
-            member = guild.get_member(member.id) 
+
+            # 4. Trả tự do
+            member = guild.get_member(member.id) # Lấy lại object mới nhất
             if member and role_radao in member.roles:
                 try:
                     await member.remove_roles(role_radao, reason="Hết giờ thanh tẩy") 
                     await self.restore_roles(guild, member)
                 except Exception: pass
 
+            # 5. Xóa kênh
             if created_channel:
                  try: await created_channel.delete()
                  except Exception: pass
@@ -139,32 +155,42 @@ class SecondServerCog(commands.Cog):
     async def thanhtay_slash(self, interaction: discord.Interaction, di_giao: str, period: str, reason: Optional[str] = None): 
         if reason is None:
             reason = "Thích thì cho đi thanh tẩy thôi!"
+        
         seconds = convert_time(period)
         if seconds == -1:
             await interaction.response.send_message("Sai định dạng thời gian (vd: 1h30m, 90s, 1d).", ephemeral=True)
             return
+        
         guild = interaction.guild
         members_to_process = parse_di_giao(guild, di_giao)
+        
         if not members_to_process:
             await interaction.response.send_message("Không tìm thấy thành viên hợp lệ.", ephemeral=True)
             return
+        
         await interaction.response.defer() 
+        
         banned_members = []
         skipped_members = []
         role_radao = guild.get_role(TARGET_ROLE_ID)
+        
         for member in members_to_process:
             is_skipped = False
             skip_reason = ""
             if member.id == interaction.user.id:
-                response_message += f"Người anh em sao tự bắn vào chân thế"
+                skip_reason = "Người anh em sao tự bắn vào chân thế"
+                is_skipped = True
             elif member.id == interaction.guild.owner_id:
-                response_message += f"Người anh em sao lại ban chủ sever tính phổng đạn à?"
+                skip_reason = "Người anh em sao lại ban chủ sever tính phổng đạn à?"
+                is_skipped = True
             elif member.top_role > interaction.user.top_role:
-                response_message += f"Ban bố bạn hả"
-            elif member.top_role = interaction.user.top_role:
-                response_message += f"Đồng nghiệp với nhau cả ban gì"
-            if role_radao and role_radao in member.roles:
-                skip_reason = "Đang ở nhà thờ"
+                skip_reason = "Ban bố bạn hả (Role họ to hơn)"
+                is_skipped = True
+            elif member.top_role == interaction.user.top_role:
+                skip_reason = "Đồng nghiệp với nhau cả ban gì (Role ngang nhau)"
+                is_skipped = True
+            elif role_radao and role_radao in member.roles:
+                skip_reason = "Đang ở nhà thờ rồi"
                 is_skipped = True
             if is_skipped:
                 skipped_members.append(f"**{member.display_name}** ({skip_reason})")
@@ -174,8 +200,15 @@ class SecondServerCog(commands.Cog):
         response_message = ""
         if banned_members:
             response_message += f"**Bonk 🔨** {len(banned_members)} dị giáo bị thanh tẩy **{period}** vì: **{reason}**.\n"
+            response_message += f"Danh sách: {', '.join(banned_members)}\n"
+        
+        if skipped_members:
+            response_message += "\n**Bỏ qua:**\n"
+            response_message += "\n".join([f"- {s}" for s in skipped_members])
+
         if not banned_members and not skipped_members:
              response_message = "Không có thành viên hợp lệ."
+             
         await interaction.followup.send(response_message)
 
     @app_commands.command(name="giaicuu", description="Giải cứu con chiên ở nhà thờ (Server Phụ).")
@@ -188,13 +221,17 @@ class SecondServerCog(commands.Cog):
         guild = interaction.guild
         role_radao = guild.get_role(TARGET_ROLE_ID)
         category = guild.get_channel(TARGET_CATEGORY_ID)
+        
         members_to_process = parse_di_giao(guild, di_giao)
         if not members_to_process:
             await interaction.response.send_message("Không tìm thấy thành viên hợp lệ.", ephemeral=True)
             return
+            
         await interaction.response.defer()
+        
         unbanned_members = []
         skipped_members = []
+        
         for member in members_to_process:
             if role_radao and role_radao in member.roles:
                 try:
@@ -211,14 +248,17 @@ class SecondServerCog(commands.Cog):
                     if str(member.id) in channel.name or (channel.topic and str(member.id) in channel.topic):
                         try: await channel.delete()
                         except: pass
+                        
         response_message = ""
         if unbanned_members:
             response_message += "Đã giải cứu: " + ", ".join(unbanned_members) + "\n"
         if skipped_members:
             if unbanned_members: response_message += "\n"
-            response_message += f"**Bỏ qua** cho **{len(skipped_members)}** dị giáo.\n"
+            response_message += f"**Bỏ qua** cho **{len(skipped_members)}** dị giáo (Lý do: Không bị giam hoặc lỗi).\n"
+            
         if not unbanned_members and not skipped_members:
              response_message = "Không có ai."
+             
         await interaction.followup.send(response_message)
 
 async def setup(bot):
