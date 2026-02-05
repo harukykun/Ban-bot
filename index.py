@@ -6,7 +6,6 @@ from discord import app_commands
 from typing import Optional
 import re 
 import time
-from keep_alive import keep_alive
 MAIN_GUILD_ID = discord.Object(id=1397175419664470031)
 TARGET_ROLE_ID = 1442769995783475292  
 TARGET_CATEGORY_ID = 1442769574285283399 
@@ -172,5 +171,4 @@ async def vebo(interaction: discord.Interaction, monkeys: str):
         else:
             msg.append(f"{m.mention} không ở đảo.")
     await interaction.followup.send("\n".join(msg))
-keep_alive()
 bot.run(os.getenv('TOKEN'))
