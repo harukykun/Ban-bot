@@ -6,6 +6,7 @@ from discord import app_commands
 from typing import Optional
 import re 
 import time
+from keep_alive import keep_alive
 MAIN_GUILD_ID = discord.Object(id=1397175419664470031)
 TARGET_ROLE_ID = 1442769995783475292  
 TARGET_CATEGORY_ID = 1442769574285283399 
@@ -110,11 +111,11 @@ async def on_ready():
     bot.tree.clear_commands(guild=None)
     await bot.tree.sync(guild=None)
     print(">> Đã xóa sạch lệnh Global cũ (Fix lỗi trùng lệnh).")
-    try:
-        await bot.load_extension('second_sever')
-        print(">> Đã tải Extension Second Server.")
-    except Exception as e:
-        print(f"!! Lỗi tải extension: {e}")
+    # try:
+    #     await bot.load_extension('second_sever')
+    #     print(">> Đã tải Extension Second Server.")
+    # except Exception as e:
+    #     print(f"!! Lỗi tải extension: {e}")
     try:
         synced = await bot.tree.sync(guild=MAIN_GUILD_ID)
         print(f">> Server Chính (ID: {MAIN_GUILD_ID.id}): Đã sync {len(synced)} lệnh (/radao, /vebo).")
@@ -171,5 +172,5 @@ async def vebo(interaction: discord.Interaction, monkeys: str):
         else:
             msg.append(f"{m.mention} không ở đảo.")
     await interaction.followup.send("\n".join(msg))
-
+keep_alive()
 bot.run(os.getenv('TOKEN'))
