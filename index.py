@@ -6,6 +6,8 @@ from discord import app_commands
 from typing import Optional
 import re 
 import time
+from dotenv import load_dotenv
+load_dotenv()
 MAIN_GUILD_ID = discord.Object(id=1397175419664470031)
 TARGET_ROLE_ID = 1442769995783475292  
 TARGET_CATEGORY_ID = 1442769574285283399 
@@ -16,7 +18,8 @@ ROLES_TO_REMOVE = [
     1397191419361230970,
     1408419247163576330,
     1397191790381236304,
-    1463754309245337672
+    1463754309245337672,
+    1462487968705937418
 ]
 
 intents = discord.Intents.default()
