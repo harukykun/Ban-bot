@@ -286,4 +286,3 @@ async def vebo(interaction: discord.Interaction, monkeys: str):
             msg.append(f"{m.mention} không ở đảo.")
     await interaction.followup.send("\n".join(msg))
 
-bot.run(os.getenv('TOKEN'))
